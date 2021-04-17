@@ -1,37 +1,30 @@
 package com.example.statusstories
 
 
-import android.annotation.SuppressLint
+import com.example.statusstories.R
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
-import android.transition.Explode
 import android.transition.Slide
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.view.Window
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.Priority
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.BitmapImageViewTarget
-import com.bumptech.glide.request.target.Target
-import com.example.statusstories.glideProgressBar.DelayBitmapTransformation
-import com.example.statusstories.glideProgressBar.LoggingListener
-import com.example.statusstories.glideProgressBar.ProgressTarget
+import com.example.statusstories.glideProgress.GlideImageLoader
 import com.example.statusstories.utils.GetTimeAgo
 import com.example.statusstories.utils.OnSwipeTouchListener
 import com.example.statusstories.utils.hideView
 import com.example.statusstories.utils.showView
 import kotlinx.android.synthetic.main.activity_status_stories.*
 import java.util.*
-import kotlin.collections.ArrayList
+
 
 class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteractionListener {
     private var counter = 0
@@ -43,7 +36,15 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
     private var statusDuration: Long = 0
     private var isImmer = true
     private var isCaching = true
-    private var target: ProgressTarget<String?, Bitmap?>? = null
+    //private var target: ProgressTarget<String?, Bitmap?>? = null
+
+
+    val options: RequestOptions = RequestOptions()
+        .centerCrop()
+        //.placeholder(R.drawable.placeholder)
+        //.error(R.drawable.ic_pic_error)
+        .diskCacheStrategy(if (isCaching) DiskCacheStrategy.ALL else DiskCacheStrategy.NONE)
+        .priority(Priority.HIGH)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,22 +77,17 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
         // statusView.setStoriesCountWithDurations(statusResourcesDuration);
         storyStatusView?.setUserInteractionListener(this)
         storyStatusView?.playStories()
-        target = MyProgressTarget(BitmapImageViewTarget(image), lottieAnim, textView)
+        //target = MyProgressTarget(BitmapImageViewTarget(image), lottieAnim, textView)
         //image?.setOnClickListener { storyStatusView?.skip() }
 
         storyStatusView?.pause()
-        target?.setModel(storyModels!!.stories!![counter].image)
+        //target?.setModel(storyModels!!.stories!![counter].image)
 
 
         //set ui
-        Glide.with(image.context)
-                .load(target?.model)
-                .asBitmap()
-                .skipMemoryCache(!isCaching)
-                .diskCacheStrategy(if (isCaching) DiskCacheStrategy.ALL else DiskCacheStrategy.NONE)
-                .transform(CenterCrop(image.context), DelayBitmapTransformation(100))
-                .listener(LoggingListener())
-                .into(target)
+
+        GlideImageLoader(image, lottieAnim, storyStatusView)
+            .load(storyModels!!.stories!![counter].image,options)
 
         Glide.with(user_img.context)
             .load(storyModels?.user?.image)
@@ -99,7 +95,10 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
             .into(user_img)
 
         user_name.text = storyModels?.user?.fullName
-        story_time.text = GetTimeAgo.getTimeAgo(storyModels!!.stories!![counter].time, story_time.context)
+        story_time.text = GetTimeAgo.getTimeAgo(
+            storyModels!!.stories!![counter].time,
+            story_time.context
+        )
 
         showSystemUI()
 
@@ -139,38 +138,31 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
     override fun onNext() {
         storyStatusView!!.pause()
         ++counter
-        target!!.setModel(storyModels!!.stories!![counter].image)
-        story_time.text = GetTimeAgo.getTimeAgo(storyModels!!.stories!![counter].time, story_time.context)
 
-        Glide.with(image!!.context)
-                .load(target!!.model)
-                .asBitmap()
-                .crossFade()
-                .centerCrop()
-                .skipMemoryCache(!isCaching)
-                .diskCacheStrategy(if (isCaching) DiskCacheStrategy.ALL else DiskCacheStrategy.NONE)
-                .transform(CenterCrop(image!!.context), DelayBitmapTransformation(100))
-                .listener(LoggingListener())
-                .into(target)
+
+
+        story_time.text = GetTimeAgo.getTimeAgo(
+            storyModels!!.stories!![counter].time,
+            story_time.context
+        )
+
+        GlideImageLoader(image, lottieAnim, storyStatusView)
+            .load(storyModels!!.stories!![counter].image,options)
     }
 
     override fun onPrev() {
         if (counter - 1 < 0) return
         storyStatusView!!.pause()
         --counter
-        target!!.setModel(storyModels!!.stories!![counter].image)
-        story_time.text = GetTimeAgo.getTimeAgo(storyModels!!.stories!![counter].time, story_time.context)
 
-        Glide.with(image!!.context)
-                .load(target!!.model)
-                .asBitmap()
-                .centerCrop()
-                .crossFade()
-                .skipMemoryCache(!isCaching)
-                .diskCacheStrategy(if (isCaching) DiskCacheStrategy.ALL else DiskCacheStrategy.NONE)
-                .transform(CenterCrop(image!!.context), DelayBitmapTransformation(100))
-                .listener(LoggingListener())
-                .into(target)
+
+        story_time.text = GetTimeAgo.getTimeAgo(
+            storyModels!!.stories!![counter].time,
+            story_time.context
+        )
+
+        GlideImageLoader(image, lottieAnim, storyStatusView)
+            .load(storyModels!!.stories!![counter].image,options)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -237,57 +229,58 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
      * or `level-list`.
      *
      * @param <Z> automatically match any real Glide target so it can be used flexibly without reimplementing.
-    </Z> */
+    </Z>
     @SuppressLint("SetTextI18n") // text set only for debugging
     private class MyProgressTarget<Z>(target: Target<Z>?, private val lottieAnim: LottieAnimationView, private val text: TextView) : ProgressTarget<String?, Z>(target) {
-        override fun getGranualityPercentage(): Float {
-            return 0.1f // this matches the format string for #text below
-        }
-
-        override fun onConnecting() {
-            lottieAnim.visibility = View.VISIBLE
-            storyStatusView!!.pause()
-
-            if (isTextEnabled) {
-                text.visibility = View.VISIBLE
-                text.text = "connecting"
-            } else {
-                text.visibility = View.INVISIBLE
-            }
-            storyStatusView!!.pause()
-        }
-
-        override fun onDownloading(bytesRead: Long, expectedLength: Long) {
-            //progress.isIndeterminate = false
-            //progress.progress = (100 * bytesRead / expectedLength).toInt()
-
-            if (isTextEnabled) {
-                text.visibility = View.VISIBLE
-                text.text = String.format(Locale.ROOT, "downloading %.2f/%.2f MB %.1f%%",
-                        bytesRead / 1e6, expectedLength / 1e6, 100f * bytesRead / expectedLength)
-            } else {
-                text.visibility = View.INVISIBLE
-            }
-            storyStatusView!!.pause()
-        }
-
-        override fun onDownloaded() {
-            //progress.isIndeterminate = true
-            if (isTextEnabled) {
-                text.visibility = View.VISIBLE
-                text.text = "decoding and transforming"
-            } else {
-                text.visibility = View.INVISIBLE
-            }
-            storyStatusView!!.pause()
-        }
-
-        override fun onDelivered() {
-            lottieAnim.visibility = View.INVISIBLE
-            text.visibility = View.INVISIBLE
-            storyStatusView!!.resume()
-        }
+    override fun getGranualityPercentage(): Float {
+    return 0.1f // this matches the format string for #text below
     }
+
+    override fun onConnecting() {
+    lottieAnim.visibility = View.VISIBLE
+    storyStatusView!!.pause()
+
+    if (isTextEnabled) {
+    text.visibility = View.VISIBLE
+    text.text = "connecting"
+    } else {
+    text.visibility = View.INVISIBLE
+    }
+    storyStatusView!!.pause()
+    }
+
+    override fun onDownloading(bytesRead: Long, expectedLength: Long) {
+    //progress.isIndeterminate = false
+    //progress.progress = (100 * bytesRead / expectedLength).toInt()
+
+    if (isTextEnabled) {
+    text.visibility = View.VISIBLE
+    text.text = String.format(Locale.ROOT, "downloading %.2f/%.2f MB %.1f%%",
+    bytesRead / 1e6, expectedLength / 1e6, 100f * bytesRead / expectedLength)
+    } else {
+    text.visibility = View.INVISIBLE
+    }
+    storyStatusView!!.pause()
+    }
+
+    override fun onDownloaded() {
+    //progress.isIndeterminate = true
+    if (isTextEnabled) {
+    text.visibility = View.VISIBLE
+    text.text = "decoding and transforming"
+    } else {
+    text.visibility = View.INVISIBLE
+    }
+    storyStatusView!!.pause()
+    }
+
+    override fun onDelivered() {
+    lottieAnim.visibility = View.INVISIBLE
+    text.visibility = View.INVISIBLE
+    storyStatusView!!.resume()
+    }
+    }
+     */
 
     companion object {
         const val STATUS_STORY_KEY = "STATUS_STORY_KEY"
