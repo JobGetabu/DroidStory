@@ -25,15 +25,19 @@ import com.bumptech.glide.request.target.Target
 import com.example.statusstories.glideProgressBar.DelayBitmapTransformation
 import com.example.statusstories.glideProgressBar.LoggingListener
 import com.example.statusstories.glideProgressBar.ProgressTarget
+import com.example.statusstories.utils.GetTimeAgo
 import com.example.statusstories.utils.OnSwipeTouchListener
 import com.example.statusstories.utils.hideView
 import com.example.statusstories.utils.showView
 import kotlinx.android.synthetic.main.activity_status_stories.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteractionListener {
     private var counter = 0
-    private var statusResources: Array<String> = arrayOf()
+    //private var statusResources: Array<String> = arrayOf()
+
+    private var storyModels : StoryModel? = StoryModel()
 
     //    private long[] statusResourcesDuration;
     private var statusDuration: Long = 0
@@ -52,8 +56,12 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
         }
         setContentView(R.layout.activity_status_stories)
 
+        storyModels = intent.getParcelableExtra(STATUS_STORY_KEY)
+        if (storyModels == null) {
+            Toast.makeText(this, "No Story Found", Toast.LENGTH_SHORT).show()
+            finish()
+        }
 
-        statusResources = intent.getStringArrayExtra(STATUS_RESOURCES_KEY)!!
         statusDuration = intent.getLongExtra(STATUS_DURATION_KEY, 5000L)
         //        statusResourcesDuration = getIntent().getLongArrayExtra(STATUS_DURATIONS_ARRAY_KEY);
         isImmer = intent.getBooleanExtra(IS_IMMERSIVE_KEY, true)
@@ -62,7 +70,7 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
         storyStatusView = findViewById(R.id.storyStatusViewId)
 
 
-        storyStatusView?.setStoriesCount(statusResources.size)
+        storyStatusView?.setStoriesCount(storyModels!!.stories!!.size)
         storyStatusView?.setStoryDuration(statusDuration)
         // or
         // statusView.setStoriesCountWithDurations(statusResourcesDuration);
@@ -72,16 +80,28 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
         //image?.setOnClickListener { storyStatusView?.skip() }
 
         storyStatusView?.pause()
-        target?.setModel(statusResources[counter])
-        Glide.with(image!!.context)
+        target?.setModel(storyModels!!.stories!![counter].image)
+
+
+        //set ui
+        Glide.with(image.context)
                 .load(target?.model)
                 .asBitmap()
                 .skipMemoryCache(!isCaching)
                 .diskCacheStrategy(if (isCaching) DiskCacheStrategy.ALL else DiskCacheStrategy.NONE)
-                .transform(CenterCrop(image!!.context), DelayBitmapTransformation(100))
+                .transform(CenterCrop(image.context), DelayBitmapTransformation(100))
                 .listener(LoggingListener())
                 .into(target)
 
+        Glide.with(user_img.context)
+            .load(storyModels?.user?.image)
+            .error(R.drawable.avatar_placeholder)
+            .into(user_img)
+
+        user_name.text = storyModels?.user?.fullName
+        story_time.text = GetTimeAgo.getTimeAgo(storyModels!!.stories!![counter].time, story_time.context)
+
+        showSystemUI()
 
         // bind reverse view
         findViewById<View>(R.id.reverse).setOnClickListener { storyStatusView?.reverse() }
@@ -111,12 +131,18 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
                 showItems()
             }
         })
+
+
+        //prefetch stories
+
     }
 
     override fun onNext() {
         storyStatusView!!.pause()
         ++counter
-        target!!.setModel(statusResources[counter])
+        target!!.setModel(storyModels!!.stories!![counter].image)
+        story_time.text = GetTimeAgo.getTimeAgo(storyModels!!.stories!![counter].time, story_time.context)
+
         Glide.with(image!!.context)
                 .load(target!!.model)
                 .asBitmap()
@@ -133,7 +159,9 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
         if (counter - 1 < 0) return
         storyStatusView!!.pause()
         --counter
-        target!!.setModel(statusResources[counter])
+        target!!.setModel(storyModels!!.stories!![counter].image)
+        story_time.text = GetTimeAgo.getTimeAgo(storyModels!!.stories!![counter].time, story_time.context)
+
         Glide.with(image!!.context)
                 .load(target!!.model)
                 .asBitmap()
@@ -263,6 +291,7 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
     }
 
     companion object {
+        const val STATUS_STORY_KEY = "STATUS_STORY_KEY"
         const val STATUS_RESOURCES_KEY = "statusStoriesResources"
         const val STATUS_DURATION_KEY = "statusStoriesDuration"
         const val STATUS_DURATIONS_ARRAY_KEY = "statusStoriesDurations"

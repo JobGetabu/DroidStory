@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">DroidStory</string>
+
+    <!-- Date Util -->
+    <string name="date_util_term_less">&lt;</string>
+    <string name="date_util_term_a">a</string>
+    <string name="date_util_term_an">an</string>
+
+    <string name="date_util_unit_second">sec</string>
+    <string name="date_util_unit_seconds">secs</string>
+    <string name="date_util_unit_minute">min</string>
+    <string name="date_util_unit_minutes">mins</string>
+    <string name="date_util_unit_hour">hr</string>
+    <string name="date_util_unit_hours">hrs</string>
+    <string name="date_util_unit_day">day</string>
+    <string name="date_util_unit_days">days</string>
+    <string name="date_util_unit_month">month</string>
+    <string name="date_util_unit_months">months</string>
+    <string name="date_util_unit_year">year</string>
+    <string name="date_util_unit_years">years</string>
+
+    <string name="date_util_prefix_lt">&lt;</string>
+    <string name="date_util_prefix_about">about</string>
+    <string name="date_util_prefix_over">over</string>
+    <string name="date_util_prefix_almost">almost</string>
+
+    <string name="date_util_suffix">ago</string>
 </resources>
