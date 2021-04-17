@@ -5,6 +5,8 @@ DroidStory helps you implement Photo Stories similar to LinkedIn stories Snapcha
 ### Spread Some :heart:
 [![GitHub followers](https://img.shields.io/github/followers/JobGetabu.svg?style=social&label=Follow)](https://github.com/JobGetabu)  [![Twitter Follow](https://img.shields.io/twitter/follow/job_getabu.svg?style=social)](https://twitter.com/job_getabu)
 
+https://user-images.githubusercontent.com/22516895/115123942-37994800-9fc8-11eb-8793-8d2924d6aa98.mp4
+
 ## Getting Started
 
 These instructions will help you set up this library easily on your current project and working in no time. You only need a few configurations to start working!
