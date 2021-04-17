@@ -41,8 +41,17 @@ That's it, you have set up the required permissions and ready to go!
 
 ## Usage
 
+Take a look at this [sample](https://github.com/JobGetabu/DroidStory/blob/main/app/src/main/java/com/droidstory/MainActivity.kt) project which has a sample implementation of the library.
 
-Take a look at this [sample](https://github.com/JobGetabu/DroidStory/tree/main/app) project which has a sample implementation of the library.
+````
+val a = Intent(view.context, StatusStoriesActivity::class.java)
+a.putExtra(StatusStoriesActivity.STATUS_DURATION_KEY, storyDuration)
+a.putExtra(StatusStoriesActivity.IS_IMMERSIVE_KEY, isImmersiveEnabled)
+a.putExtra(StatusStoriesActivity.IS_CACHING_ENABLED_KEY, isCacheEnabled)
+a.putExtra(StatusStoriesActivity.IS_TEXT_PROGRESS_ENABLED_KEY, isTextEnabled)
+a.putExtra(StatusStoriesActivity.STATUS_STORY_KEY, storyModel)
+startActivity(a)
+````
 
 ## Contributing and Issues
 
