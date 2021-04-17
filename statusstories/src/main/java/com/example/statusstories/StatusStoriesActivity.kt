@@ -132,7 +132,6 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
             }
         })
 
-
         //prefetch stories
 
     }

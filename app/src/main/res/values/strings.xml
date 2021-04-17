@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Status Stories</string>
+    <string name="app_name" translatable="false">DroidStory</string>
     <string name="once_upon_a_time">Once upon a time…</string>
     <string name="story_duration">Story duration</string>
     <string name="is_text_progress_enabled">Is text progress enabled?</string>
