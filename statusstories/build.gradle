@@ -50,6 +50,9 @@ dependencies {
     //lottie
     api 'com.airbnb.android:lottie:3.6.0'
 
+    // Circular image
+    api 'com.mikhaellopez:circularimageview:4.2.0'
+
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

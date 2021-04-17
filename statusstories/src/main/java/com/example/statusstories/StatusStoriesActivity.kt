@@ -5,11 +5,16 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
+import android.transition.Explode
+import android.transition.Slide
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.Window
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
@@ -20,6 +25,9 @@ import com.bumptech.glide.request.target.Target
 import com.example.statusstories.glideProgressBar.DelayBitmapTransformation
 import com.example.statusstories.glideProgressBar.LoggingListener
 import com.example.statusstories.glideProgressBar.ProgressTarget
+import com.example.statusstories.utils.OnSwipeTouchListener
+import com.example.statusstories.utils.hideView
+import com.example.statusstories.utils.showView
 import kotlinx.android.synthetic.main.activity_status_stories.*
 import java.util.*
 
@@ -35,12 +43,21 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        with(window) {
+            requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
+
+            // set an exit transition
+            enterTransition = Slide(Gravity.BOTTOM)
+            exitTransition = Slide(Gravity.TOP)
+        }
         setContentView(R.layout.activity_status_stories)
+
+
         statusResources = intent.getStringArrayExtra(STATUS_RESOURCES_KEY)!!
-        statusDuration = intent.getLongExtra(STATUS_DURATION_KEY, 3000L)
+        statusDuration = intent.getLongExtra(STATUS_DURATION_KEY, 5000L)
         //        statusResourcesDuration = getIntent().getLongArrayExtra(STATUS_DURATIONS_ARRAY_KEY);
         isImmer = intent.getBooleanExtra(IS_IMMERSIVE_KEY, true)
-        isCaching = intent.getBooleanExtra(IS_CACHING_ENABLED_KEY, true)
+        isCaching = true //intent.getBooleanExtra(IS_CACHING_ENABLED_KEY, true)
         isTextEnabled = intent.getBooleanExtra(IS_TEXT_PROGRESS_ENABLED_KEY, true)
         storyStatusView = findViewById(R.id.storyStatusViewId)
 
@@ -52,7 +69,8 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
         storyStatusView?.setUserInteractionListener(this)
         storyStatusView?.playStories()
         target = MyProgressTarget(BitmapImageViewTarget(image), lottieAnim, textView)
-        image?.setOnClickListener { storyStatusView?.skip() }
+        //image?.setOnClickListener { storyStatusView?.skip() }
+
         storyStatusView?.pause()
         target?.setModel(statusResources[counter])
         Glide.with(image!!.context)
@@ -60,7 +78,7 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
                 .asBitmap()
                 .skipMemoryCache(!isCaching)
                 .diskCacheStrategy(if (isCaching) DiskCacheStrategy.ALL else DiskCacheStrategy.NONE)
-                .transform(CenterCrop(image!!.context), DelayBitmapTransformation(1000))
+                .transform(CenterCrop(image!!.context), DelayBitmapTransformation(100))
                 .listener(LoggingListener())
                 .into(target)
 
@@ -71,54 +89,28 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
         // bind skip view
         findViewById<View>(R.id.skip).setOnClickListener { storyStatusView?.skip() }
 
-        findViewById<View>(R.id.center).setOnTouchListener { _, motionEvent ->
+        findViewById<View>(R.id.center).setOnTouchListener(object : OnSwipeTouchListener(this) {
 
-            when (motionEvent.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    storyStatusView?.pause()
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    storyStatusView?.resume()
-                    true
-                }
-                MotionEvent.ACTION_CANCEL -> {
-                    true
-                }
-                MotionEvent.ACTION_OUTSIDE -> {
-                    true
-                }
-                else -> super.onTouchEvent(motionEvent)
+            override fun onSwipeDown() {
+                finish()
             }
 
-        }
-
-        /*findViewById(R.id.center).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    storyStatusView.pause();
-                } else {
-                    storyStatusView.resume();
-                }
-                return true;
+            override fun onSwipeUp() {
+                super.onSwipeUp()
             }
-        });
 
-        findViewById(R.id.actions).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    storyStatusView.pause();
-                } else {
-                    storyStatusView.resume();
-                }
-                return true;
+            override fun onDown() {
+                super.onDown()
+                storyStatusView!!.pause()
+                hideItems()
             }
-        });*/
+
+            override fun onUp() {
+                super.onUp()
+                storyStatusView!!.resume()
+                showItems()
+            }
+        })
     }
 
     override fun onNext() {
@@ -132,7 +124,7 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
                 .centerCrop()
                 .skipMemoryCache(!isCaching)
                 .diskCacheStrategy(if (isCaching) DiskCacheStrategy.ALL else DiskCacheStrategy.NONE)
-                .transform(CenterCrop(image!!.context), DelayBitmapTransformation(1000))
+                .transform(CenterCrop(image!!.context), DelayBitmapTransformation(100))
                 .listener(LoggingListener())
                 .into(target)
     }
@@ -147,9 +139,9 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
                 .asBitmap()
                 .centerCrop()
                 .crossFade()
-                //.skipMemoryCache(!isCaching)
-                //.diskCacheStrategy(if (isCaching) DiskCacheStrategy.ALL else DiskCacheStrategy.NONE)
-                .transform(CenterCrop(image!!.context), DelayBitmapTransformation(1000))
+                .skipMemoryCache(!isCaching)
+                .diskCacheStrategy(if (isCaching) DiskCacheStrategy.ALL else DiskCacheStrategy.NONE)
+                .transform(CenterCrop(image!!.context), DelayBitmapTransformation(100))
                 .listener(LoggingListener())
                 .into(target)
     }
@@ -157,12 +149,43 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (isImmer && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (hasFocus) {
-                window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN //| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-            }
+            if (hasFocus) showSystemUI()
         }
+    }
+
+    private fun hideItems(){
+        upperBody.hideView()
+        lowerBody.hideView()
+        storyStatusView?.hideView()
+        showSystemUI()
+    }
+    private fun showItems(){
+        upperBody.showView()
+        lowerBody.showView()
+        storyStatusView?.showView()
+        showSystemUI()
+    }
+
+    private fun showSystemUI(){
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN //| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+    }
+
+    private fun hideSystemUI() {
+        // Enables regular immersive mode.
+        // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
+        // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
+                // Set the content to appear under the system bars so that the
+                // content doesn't resize when the system bars hide and show.
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                //or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                // Hide the nav bar and status bar
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
     override fun onComplete() {
@@ -196,6 +219,7 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
 
         override fun onConnecting() {
             lottieAnim.visibility = View.VISIBLE
+            storyStatusView!!.pause()
 
             if (isTextEnabled) {
                 text.visibility = View.VISIBLE
@@ -203,14 +227,12 @@ class StatusStoriesActivity : AppCompatActivity(), StoryStatusView.UserInteracti
             } else {
                 text.visibility = View.INVISIBLE
             }
-            storyStatusView?.pause()
+            storyStatusView!!.pause()
         }
 
         override fun onDownloading(bytesRead: Long, expectedLength: Long) {
             //progress.isIndeterminate = false
             //progress.progress = (100 * bytesRead / expectedLength).toInt()
-
-
 
             if (isTextEnabled) {
                 text.visibility = View.VISIBLE
