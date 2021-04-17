@@ -1,5 +1,4 @@
-# DroidStory  [![](https://jitpack.io/v/JobGetabu/DroidStory.svg)](https://jitpack.io/#JobGetabu/DroidStory)
- [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FJobGetabu%2FDroidNet.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FJobGetabu%2FDroidNet?ref=badge_shield)  [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](LICENSE.md)
+# DroidStory  [![](https://jitpack.io/v/JobGetabu/DroidStory.svg)](https://jitpack.io/#JobGetabu/DroidStory) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FJobGetabu%2FDroidNet.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FJobGetabu%2FDroidNet?ref=badge_shield)  [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](LICENSE.md)
 
 DroidStory helps you implement Photo Stories similar to LinkedIn stories Snapchat stories Instagram stories WhatsApp Statuses Facebook Messenger Stories
 
